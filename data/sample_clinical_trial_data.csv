@@ -1,0 +1,21 @@
+nct_id,sentence_id,sentence_text,section,has_prior_therapy,therapy_type,therapy_name,is_inclusion_criteria,is_exclusion_criteria,confidence_score,notes,original_document_position
+NCT00123456,sent_001,"Patients must have received prior chemotherapy for advanced disease.",prior_therapy,true,chemotherapy,chemotherapy,false,true,0.95,"Clear prior therapy requirement",1
+NCT00123456,sent_002,"No prior immunotherapy is allowed.",prior_therapy,true,immunotherapy,immunotherapy,false,true,0.90,"Exclusion of prior immunotherapy",2
+NCT00123456,sent_003,"Age must be 18 years or older.",inclusion,false,,,true,false,1.0,"Age requirement - no therapy mentioned",3
+NCT00123456,sent_004,"ECOG performance status 0-1.",inclusion,false,,,true,false,1.0,"Performance status - no therapy",4
+NCT00123456,sent_005,"Prior radiation therapy to the target lesion is not permitted.",prior_therapy,true,radiation_therapy,radiation therapy,false,true,0.88,"Radiation therapy exclusion",5
+NCT00234567,sent_006,"Patients who have failed platinum-based chemotherapy.",prior_therapy,true,chemotherapy,platinum-based chemotherapy,true,false,0.92,"Failed prior therapy inclusion",6
+NCT00234567,sent_007,"At least 4 weeks since last chemotherapy treatment.",prior_therapy,true,chemotherapy,chemotherapy,false,true,0.85,"Washout period requirement",7
+NCT00234567,sent_008,"Adequate bone marrow function is required.",inclusion,false,,,true,false,1.0,"Lab requirement - no therapy",8
+NCT00234567,sent_009,"No concurrent anti-cancer therapy allowed.",concurrent_therapy,true,other,anti-cancer therapy,false,true,0.80,"Concurrent therapy restriction",9
+NCT00234567,sent_010,"Previous treatment with pembrolizumab is excluded.",prior_therapy,true,immunotherapy,pembrolizumab,false,true,0.95,"Specific drug exclusion",10
+NCT00345678,sent_011,"Patients must be treatment-naive.",prior_therapy,false,,,true,false,0.90,"No prior treatment allowed",11
+NCT00345678,sent_012,"Life expectancy of at least 12 weeks.",inclusion,false,,,true,false,1.0,"Survival requirement - no therapy",12
+NCT00345678,sent_013,"Prior surgery for the primary tumor is allowed.",prior_therapy,true,surgery,surgery,true,false,0.85,"Surgery is permitted",13
+NCT00345678,sent_014,"No investigational agents within 30 days.",prior_therapy,true,other,investigational agents,false,true,0.82,"Investigational drug restriction",14
+NCT00345678,sent_015,"Histologically confirmed adenocarcinoma.",inclusion,false,,,true,false,1.0,"Histology requirement - no therapy",15
+NCT00456789,sent_016,"Progression on or after anti-PD-1 therapy.",prior_therapy,true,immunotherapy,anti-PD-1 therapy,true,false,0.90,"Progression on prior immunotherapy",16
+NCT00456789,sent_017,"Prior CDK4/6 inhibitor therapy is permitted.",prior_therapy,true,targeted_therapy,CDK4/6 inhibitor,true,false,0.88,"Targeted therapy allowed",17
+NCT00456789,sent_018,"Measurable disease per RECIST 1.1.",inclusion,false,,,true,false,1.0,"Disease measurement - no therapy",18
+NCT00456789,sent_019,"No prior bevacizumab treatment.",prior_therapy,true,targeted_therapy,bevacizumab,false,true,0.92,"Specific targeted therapy exclusion",19
+NCT00456789,sent_020,"Adequate hepatic function required.",inclusion,false,,,true,false,1.0,"Organ function - no therapy",20

@@ -1,0 +1,87 @@
+# Configuration for Clinical Trial Prior Therapy Classification
+
+# Data Processing Configuration
+data_processing:
+  # Text preprocessing options
+  preprocessing:
+    lowercase: true
+    remove_special_chars: false
+    normalize_whitespace: true
+  
+  # Data splitting configuration
+  data_split:
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+    random_state: 42
+    split_by_nct_id: true  # Ensure no NCT appears in multiple splits
+
+# Model Configuration
+models:
+  # TF-IDF based classifiers
+  tfidf_random_forest:
+    type: "TfidfClassifier"
+    classifier_type: "random_forest"
+    max_features: 5000
+    ngram_range: [1, 2]
+    parameters:
+      n_estimators: 100
+      random_state: 42
+  
+  tfidf_logistic_regression:
+    type: "TfidfClassifier"
+    classifier_type: "logistic_regression"
+    max_features: 5000
+    ngram_range: [1, 2]
+    parameters:
+      random_state: 42
+      max_iter: 1000
+  
+  tfidf_naive_bayes:
+    type: "TfidfClassifier"
+    classifier_type: "naive_bayes"
+    max_features: 5000
+    ngram_range: [1, 2]
+  
+  # Rule-based classifier
+  rule_based:
+    type: "RuleBasedClassifier"
+  
+  # Ensemble classifier
+  ensemble:
+    type: "EnsembleClassifier"
+    base_models: ["tfidf_random_forest", "tfidf_logistic_regression", "rule_based"]
+
+# Evaluation Configuration
+evaluation:
+  output_dir: "evaluation_results"
+  save_plots: true
+  save_error_analysis: true
+  
+  # Metrics to calculate
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - roc_auc
+    - confusion_matrix
+  
+  # Cross-validation settings
+  cross_validation:
+    enabled: true
+    cv_folds: 5
+    random_state: 42
+
+# Paths Configuration
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  results_dir: "results"
+  logs_dir: "logs"
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/classification.log"
