@@ -22,6 +22,7 @@ from src.openrouter_client import OpenRouterClient
 MODEL_KEY = "qwen"
 MODEL_ID = MODELS[MODEL_KEY]
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, f"{MODEL_KEY}.csv")
+TAG = f"[{MODEL_KEY}]"
 ERROR_FILE = os.path.join(OUTPUT_DIR, f"error_output_{MODEL_KEY}.csv")
 
 COLUMNS = [
@@ -39,7 +40,7 @@ def _load_cache() -> pd.DataFrame:
     """Load existing results CSV if it exists."""
     if os.path.exists(OUTPUT_FILE):
         df = pd.read_csv(OUTPUT_FILE)
-        print(f"  📦 Cache loaded: {len(df)} rows from {OUTPUT_FILE}")
+        print(f"  {TAG} 📦 Cache loaded: {len(df)} rows from {OUTPUT_FILE}")
         return df
     return pd.DataFrame(columns=COLUMNS)
 
@@ -87,27 +88,27 @@ def _append_row(cache_df: pd.DataFrame, new_row: dict) -> pd.DataFrame:
 
 def run(num_rows: int = 100, dry_run: bool = False):
     """Run classification with Qwen3-32b."""
-    print(f"\n🚀 Running classification with {MODEL_ID}")
-    print(f"   Rows: {num_rows} | Dry run: {dry_run}\n")
+    print(f"\n{TAG} 🚀 Running classification with {MODEL_ID}")
+    print(f"{TAG}    Rows: {num_rows} | Dry run: {dry_run}\n")
 
     # 1. Load data
     data = load_data(num_rows=num_rows)
-    print(f"  ✅ Loaded {len(data)} records from input data")
+    print(f"  {TAG} ✅ Loaded {len(data)} records from input data")
 
     # 2. Load cache
     cache_df = _load_cache()
 
     if dry_run:
         cached = sum(1 for r in data if _is_cached(cache_df, r))
-        print(f"  📊 Already cached: {cached}/{len(data)}")
-        print(f"  📊 Need to process: {len(data) - cached}")
+        print(f"  {TAG} 📊 Already cached: {cached}/{len(data)}")
+        print(f"  {TAG} 📊 Need to process: {len(data) - cached}")
         for i, record in enumerate(data[:3]):
             sys_msg, usr_msg = build_prompt(record)
             print(f"\n--- Record {i+1} ---")
             print(f"Drug: {record['drug_name']} | Section: {record['section']} | Label: {record['label']}")
             print(f"Cached: {_is_cached(cache_df, record)}")
             print(f"Prompt preview: {usr_msg[:200]}...")
-        print("\n  🏁 Dry run complete. No API calls made.")
+        print(f"\n  {TAG} 🏁 Dry run complete. No API calls made.")
         return
 
     # 3. Classify each record, saving after every row
@@ -118,11 +119,11 @@ def run(num_rows: int = 100, dry_run: bool = False):
     for i, record in enumerate(data):
         if _is_cached(cache_df, record):
             skipped += 1
-            print(f"  [{i+1}/{len(data)}] {record['trial_id']} — ⏭ cached")
+            print(f"  {TAG} [{i+1}/{len(data)}] {record['trial_id']} — ⏭ cached")
             continue
 
         sys_msg, usr_msg = build_prompt(record)
-        print(f"  [{i+1}/{len(data)}] {record['trial_id']} ({record['drug_name']})…", end=" ")
+        print(f"  {TAG} [{i+1}/{len(data)}] {record['trial_id']} ({record['drug_name']})…", end=" ")
 
         response = client.classify(MODEL_ID, sys_msg, usr_msg)
 
@@ -156,20 +157,20 @@ def run(num_rows: int = 100, dry_run: bool = False):
         processed += 1
 
     # 4. Summary
-    print(f"\n  💾 Saved {len(cache_df)} total rows to {OUTPUT_FILE}")
+    print(f"\n  {TAG} 💾 Saved {len(cache_df)} total rows to {OUTPUT_FILE}")
 
     valid = cache_df["llm_prediction"].isin([0, 1, 0.0, 1.0])
     correct = cache_df.loc[valid, "label"] == cache_df.loc[valid, "llm_prediction"]
     total_valid = valid.sum()
     total_correct = correct.sum()
 
-    print(f"  📊 This run: {processed} new | {skipped} cached")
+    print(f"  {TAG} 📊 This run: {processed} new | {skipped} cached")
     if total_valid > 0:
-        print(f"  📊 Accuracy: {total_correct}/{total_valid} = {total_correct/total_valid:.2%}")
+        print(f"  {TAG} 📊 Accuracy: {total_correct}/{total_valid} = {total_correct/total_valid:.2%}")
 
     # 5. Error summary (error file is saved incrementally by _save_df)
     error_mask = ~cache_df["llm_prediction"].isin([0, 1, 0.0, 1.0])
-    print(f"  ⚠️  {error_mask.sum()} failed rows in {ERROR_FILE}")
+    print(f"  {TAG} ⚠️  {error_mask.sum()} failed rows in {ERROR_FILE}")
 
 
 def main():
