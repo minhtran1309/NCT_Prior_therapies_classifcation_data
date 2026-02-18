@@ -88,9 +88,22 @@ class OpenRouterClient:
                 response.raise_for_status()
                 data = response.json()
 
+                # Check for embedded error (OpenRouter returns 200 but error in choices)
+                choice = data.get("choices", [{}])[0]
+                choice_error = choice.get("error")
+                if choice_error:
+                    error_msg = choice_error.get("message", str(choice_error))
+                    print(f"  ⚠ API error: {error_msg}")
+                    return {
+                        "prediction": None,
+                        "reason": "",
+                        "raw_response": "",
+                        "error": error_msg,
+                    }
+
                 # Extract text from the response
                 raw_text = (
-                    data.get("choices", [{}])[0]
+                    choice
                     .get("message", {})
                     .get("content", "")
                     .strip()

@@ -1,16 +1,17 @@
 """
-Orchestrator — Run all LLM models and produce a comparison report.
+Orchestrator — Run all LLM models concurrently and produce a comparison report.
 
-Each model saves its results as a pandas CSV in the output/ directory.
-The caching mechanism allows rerunning to retry only failed rows.
+Each model runs in its own thread so you don't wait for one to finish
+before the next starts. Results are saved independently per model.
 
 Usage:
-    python -m src.run_all [--num_rows N] [--models gpt4o,gpt5,...] [--dry-run]
+    conda activate oncogpt && python -m src.run_all [--num_rows N] [--models gpt4o,gpt5,...] [--dry-run]
 """
 
 import os
 import argparse
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 
@@ -29,6 +30,15 @@ RUNNERS = {
     "ministral": run_ministral,
     "qwen": run_qwen,
 }
+
+
+def _run_model(model_key, num_rows, dry_run):
+    """Wrapper to run a single model and catch exceptions."""
+    try:
+        RUNNERS[model_key](num_rows=num_rows, dry_run=dry_run)
+        return model_key, True, None
+    except Exception as e:
+        return model_key, False, str(e)
 
 
 def compare_results():
@@ -86,6 +96,11 @@ def main():
         action="store_true",
         help="Only show comparison of existing results, don't run models",
     )
+    parser.add_argument(
+        "--sequential",
+        action="store_true",
+        help="Run models one at a time instead of concurrently",
+    )
     args = parser.parse_args()
 
     if args.compare_only:
@@ -102,18 +117,36 @@ def main():
     else:
         selected = list(RUNNERS.keys())
 
+    mode = "sequential" if args.sequential else "concurrent"
+
     print("=" * 60)
     print("  CLINICAL TRIAL PRIOR THERAPY CLASSIFIER")
     print("=" * 60)
     print(f"  Models   : {', '.join(selected)}")
     print(f"  Rows     : {args.num_rows}")
+    print(f"  Mode     : {mode}")
     print(f"  Dry run  : {args.dry_run}")
     print(f"  Output   : {OUTPUT_DIR}")
     print("=" * 60)
 
-    for model_key in selected:
-        runner = RUNNERS[model_key]
-        runner(num_rows=args.num_rows, dry_run=args.dry_run)
+    if args.sequential:
+        # Run one at a time (original behavior)
+        for model_key in selected:
+            RUNNERS[model_key](num_rows=args.num_rows, dry_run=args.dry_run)
+    else:
+        # Run all models concurrently in separate threads
+        with ThreadPoolExecutor(max_workers=len(selected)) as executor:
+            futures = {
+                executor.submit(_run_model, key, args.num_rows, args.dry_run): key
+                for key in selected
+            }
+
+            for future in as_completed(futures):
+                model_key, success, error = future.result()
+                if success:
+                    print(f"\n  ✅ {model_key} completed successfully")
+                else:
+                    print(f"\n  ❌ {model_key} failed: {error}")
 
     # Show comparison if we have real results
     if not args.dry_run:
