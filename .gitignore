@@ -45,10 +45,14 @@ ENV/
 .coverage
 htmlcov/
 
-# Data files (except samples)
+# Data files (except samples and examples)
 data/*
 !data/sample_*.csv
 !data/README.md
+!data/example/
+
+# Project context (local notes)
+.context/
 
 # Model artifacts
 models/*.joblib
@@ -59,6 +63,7 @@ models/*.pkl
 # Results and logs
 evaluation_results/
 results/
+output/
 logs/
 *.log
 
